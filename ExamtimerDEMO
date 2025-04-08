@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Exam Timer</title>
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #eef2f7;
+      margin: 0;
+      padding: 2vh;
+      text-align: center;
+      color: #333;
+    }
+
+    #popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #popupContent {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      width: 320px;
+    }
+
+    #popupContent input {
+      display: block;
+      margin: 0.5em 0;
+      padding: 0.6em;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #popupContent button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.6em 1.2em;
+      border-radius: 6px;
+      font-size: 1em;
+      margin-top: 1em;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    #popupContent button:hover {
+      background-color: #0056b3;
+    }
+
+    #headingDisplay {
+      font-size: 2.2em;
+      font-weight: 600;
+      margin: 0.5em 0;
+    }
+
+    #clock {
+      font-size: 2.4em;
+      font-weight: 500;
+      margin-bottom: 0.4em;
+    }
+
+    .inline-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5em;
+      flex-wrap: wrap;
+      margin: 1em 0;
+    }
+
+    .exam-end-center {
+      color: #c0392b;
+      font-weight: bold;
+      font-size: 2em;
+    }
+
+    .time-seconds {
+      font-size: 0.6em;
+      vertical-align: top;
+    }
+
+    #mainConcluded {
+      color: #c0392b;
+      font-weight: bold;
+      font-size: 1.6em;
+      margin-top: 1em;
+      display: none;
+    }
+
+    .student-provisions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1em;
+      justify-items: center;
+      padding: 1em;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .student-block {
+      background: #fff;
+      padding: 1em;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 220px;
+    }
+
+    .student-block input,
+    .student-block select {
+      font-size: 0.95em;
+    }
+
+    .student-block .adjusted-time {
+      margin-top: 0.5em;
+      font-weight: bold;
+    }
+
+    .break-timer {
+      margin-top: 0.5em;
+      font-size: 0.85em;
+      color: #555;
+    }
+
+    #downloadSummary {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      padding: 1em 2em;
+      font-size: 1.1em;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    #downloadSummary:hover {
+      background-color: #218838;
+    }
+      /* Dark mode styles */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode #popupContent,
+    body.dark-mode .student-block {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode #downloadSummary {
+      background-color: #1db954;
+    }
+
+    body.dark-mode #downloadSummary:hover {
+      background-color: #17a74a;
+    }
+
+    body.dark-mode select,
+    body.dark-mode input,
+    body.dark-mode button {
+      background-color: #333;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+      body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode #popupContent,
+    body.dark-mode .student-block {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode #downloadSummary {
+      background-color: #1db954;
+    }
+
+    body.dark-mode #downloadSummary:hover {
+      background-color: #17a74a;
+    }
+
+    body.dark-mode select,
+    body.dark-mode input,
+    body.dark-mode button {
+      background-color: #333;
+      color: #e0e0e0;
+      border-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <img id="schoolLogo" style="max-height: 80px; display: none; position: absolute; top: 10px; right: 20px;">
+  <div style="position: absolute; top: 50px; left: 160px;">
+    <label class="switch">
+      <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+      <span class="slider round"></span>
+    </label>
+  </div>
+
+  <div id="popup">
+    <div id="popupContent">
+      <h2>Exam Setup</h2>
+      <label>Exam Title:</label>
+      <input id="popupTitle" type="text" placeholder="Exam Timer">
+      <label>Reading Duration (minutes):</label>
+      <input id="popupReading" type="number" placeholder="10">
+      <label>Exam Duration (minutes):</label>
+      <input id="popupExam" type="number" placeholder="120">
+      <label>Upload School Logo (optional):</label>
+      <input type="file" id="logoUpload" accept="image/*">
+      <button onclick="startExamSetup()">Start</button>
+    </div>
+  </div>
+
+  <div id="headingDisplay" style="position: relative;">
+  <div style="position: absolute; top: -30px; right: 20px; font-size: 0.9em; color: red;">DEMO VERSION</div>
+</div>
+  <div style="position: absolute; top: 10px; left: 20px; font-size: 1em;" id="todayDate"></div>
+  <div id="clock"><strong>Current Time:</strong> <span id="currentTime">--:--</span></div>
+  <div class="inline-group">
+    <button onclick="startNow()">Start Exam</button>
+    <div>Reading End / Exam Start: <span id="readingEnd">--:--</span></div>
+  </div>
+  <div class="exam-end-center">Exam Finishes At: <span id="examEnd">--:--</span></div>
+  <div id="mainConcluded">Main Exam Concluded</div>
+  <hr style="width: 80%; margin: 2em auto;">
+  <h2 style="margin-top: 1em;">Exam Provisions</h2>
+  <div class="student-provisions" id="studentsContainer"></div>
+
+  <div style="margin-top: 2em; color: red; font-weight: bold;">DEMO VERSION – Full version available on TES.com</div>
+
+  <script>
+    let examEndTime = null;
+    let examStartTime = null;
+    let studentLogs = {};
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('currentTime').innerHTML = formatTimeWithStyledSeconds(now);
+      if (examEndTime && now >= examEndTime) {
+        document.getElementById('mainConcluded').style.display = 'block';
+        document.getElementById('downloadSummary').style.display = 'block';
+      }
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function startExamSetup() {
+      const title = document.getElementById('popupTitle').value || 'Exam Timer';
+      const readingMins = parseInt(document.getElementById('popupReading').value);
+      const examMins = parseInt(document.getElementById('popupExam').value);
+      if (isNaN(readingMins) || isNaN(examMins)) {
+        alert("Please enter valid numbers for reading and exam durations.");
+        return;
+      }
+
+      document.getElementById('headingDisplay').textContent = title;
+      const logoFile = document.getElementById('logoUpload').files[0];
+      if (logoFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const logo = document.getElementById('schoolLogo');
+          logo.src = e.target.result;
+          logo.style.display = 'block';
+        }
+        reader.readAsDataURL(logoFile);
+      }
+      document.getElementById('popup').style.display = 'none';
+      window.readingDuration = readingMins;
+      window.examDuration = examMins;
+      window.examReady = true;
+    }
+
+    function startNow() {
+      if (!window.examReady) {
+        alert("Please complete the exam setup first.");
+        return;
+      }
+      const now = new Date();
+      const readingEnd = new Date(now.getTime() + window.readingDuration * 60000);
+      examStartTime = readingEnd;
+      examEndTime = new Date(examStartTime.getTime() + window.examDuration * 60000);
+      document.getElementById('readingEnd').textContent = formatTime(readingEnd);
+      document.getElementById('examEnd').innerHTML = formatTimeWithStyledSeconds(examEndTime);
+
+      // Update all students' adjusted finish times
+      for (let i = 0; i < 10; i++) {
+        updateAdjustedFinish(i);
+      }
+    
+    }
+
+    function formatTimeWithStyledSeconds(date) {
+      const parts = date.toLocaleTimeString('en-AU').split(":");
+      return `${parts[0]}:${parts[1]}:<span class="time-seconds">${parts[2]}</span>`;
+    }
+
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-AU');
+    }
+
+    function setupStudentBlocks() {
+      const container = document.getElementById('studentsContainer');
+      for (let i = 0; i < 10; i++) {
+        const block = document.createElement('div');
+        block.className = 'student-block';
+        block.innerHTML = `
+          <input placeholder="Student Name" id="student-${i}-name" style="width: 90%; margin-bottom: 0.5em;">
+          <div style="font-size: 0.9em; display: flex; justify-content: space-between; align-items: center;">
+            <label for="student-${i}-allowed">Rest Breaks Allowed:</label>
+            <select id="student-${i}-allowed" style="width: 50px;">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div style="font-size: 0.9em; display: flex; justify-content: space-between; align-items: center; margin-top: 0.3em;">
+            <label for="student-${i}-extra">Extra Time:</label>
+            <select id="student-${i}-extra" style="width: 70px;">
+              <option value="0">0 min</option>
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+            </select>
+          </div>
+          <br>
+          <button id="student-${i}-break-btn" onclick="toggleBreak(${i})">Start Rest Break</button>
+          <div class="break-timer" id="student-${i}-break-timer">Break not started</div>
+          <div class="adjusted-time" id="student-${i}-finish">Finish: --:--</div>
+        `;
+        container.appendChild(block);
+        studentLogs[i] = [];
+      }
+    }
+
+    function toggleBreak(studentId) {
+      const btn = document.getElementById(`student-${studentId}-break-btn`);
+      const timerDisplay = document.getElementById(`student-${studentId}-break-timer`);
+      const log = studentLogs[studentId];
+      if (btn.dataset.active === "true") {
+        const end = new Date();
+        log[log.length - 1].end = end;
+        timerDisplay.textContent += ` - ended at ${formatTime(end)}`;
+        btn.textContent = "Start Rest Break";
+        btn.dataset.active = "false";
+        updateAdjustedFinish(studentId);
+      } else {
+        const start = new Date();
+        log.push({ start });
+        timerDisplay.textContent = `Break ${log.length} started at ${formatTime(start)}`;
+        btn.textContent = "End Rest Break";
+        btn.dataset.active = "true";
+      }
+    }
+
+    function updateAdjustedFinish(studentId) {
+      if (!examEndTime) return;
+      const allowed = parseInt(document.getElementById(`student-${studentId}-allowed`).value) || 0;
+      const breaks = studentLogs[studentId].filter(b => b.end);
+      const allowedExtend = Math.min(breaks.length, allowed) * 5 * 60000;
+      const extraMinutes = parseInt(document.getElementById(`student-${studentId}-extra`).value) || 0;
+      const extraExtend = extraMinutes * 60000;
+      const extend = allowedExtend + extraExtend;
+      const newFinish = new Date(examEndTime.getTime() + extend);
+      document.getElementById(`student-${studentId}-finish`).textContent = 'Finish: ' + formatTime(newFinish);
+    }
+
+    setInterval(updateClock, 1000);
+    document.getElementById('todayDate').textContent = "Today's Date: " + new Date().toLocaleDateString('en-AU');
+    setupStudentBlocks();
+
+    // Automatically update finish time if Extra Time dropdown changes
+    for (let i = 0; i < 10; i++) {
+      document.getElementById(`student-${i}-extra`).addEventListener('change', () => updateAdjustedFinish(i));
+    }
+  // Created by David Cameron 2025
+</script>
+</body>
+</html>
