@@ -58,5 +58,5 @@ This zip file includes:
 Have questions or want a customised version for your school?
 
 **David Cameron**  
-📧 your-email@example.com  
+📧da710cameron@gmail.com
 📍 Sydney, Australia  
